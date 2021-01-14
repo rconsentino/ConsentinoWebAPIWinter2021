@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML Web Socket Example</title>
+</head>
+<body>
+    <h1>Welcome to the chat index page.</h1>
+    <input type="text" name="message">
+    <br>
+    <button>Send Message</button>
+    <h2>Chat Log</h2>
+    <div class="chatlog"></div>
+    <script>
+        var ws = new WebSocket('ws://localhost:3000', 'echo-protocol'),
+        chatLog = document.querySelector('.chatlog'),
+        message =  document.querySelector('input[name="message"]')
+
+        document.querySelector('button').addEventListener('click', sendMessage)
+
+        function sendMessage()
+        {
+            ws.send(message.value)
+        }
+
+        ws.addEventListener('open', function(e)
+        {
+            chatLog.insertAdjacentHTML("beforeend", '<br> connection made')
+        })
+
+        ws.addEventListener("message", function(e)
+        {
+            var msg = e.data
+            chatLog.insertAdjacentHTML("beforeend", "<br>" + msg)
+        })
+
+    </script>
+
+</body>
+</html>
