@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mongoose Lab Example</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="container">
+        <h1>Welcome to the Game List page</h1>
+        <nav>
+            <a href='index.html'>Game Entry</a>
+            <a href='#'>Game List</a>
+        </nav>
+        <script>
+            fetch('/getData').then(function(games)
+            {
+                games.json().then(function(thegames)
+                {
+                    console.log(thegames)
+                    for(let game of thegames.game)
+                    {
+                        var gameElement = document.createElement('p')
+                        gameElement.innerHTML = game.game
+                        document.getElementById('container').appendChild(gameElement)
+
+                        //add a delete button
+                        var deleteBtn = document.createElement('button')
+                        deleteBtn.innerText = 'Delete'
+                        deleteBtn.addEventListener('click',function deleteGame()
+                        {
+                            location.reload()
+                            fetch('/deleteGame',{
+                                method:"POST",
+                                headers:{
+                                    "Content-Type":"application/json"
+                                },
+                                body:JSON.stringify({
+                                    _id:game._id
+                                })
+                            })
+                        })
+                        gameElement.appendChild(deleteBtn)
+                    }
+                })
+            })
+        </script>
+    </div>
+</body>
+</html>
