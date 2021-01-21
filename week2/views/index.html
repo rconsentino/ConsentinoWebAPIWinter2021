@@ -5,6 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mongoose Lab Example</title>
     <link rel="stylesheet" href="css/style.css">
+    <script>
+        function checkForm()
+        {
+            if(document.getElementById('GameTitle' == ""))
+            {
+                event.preventDefault()
+                document.getElementById('err').innerHTML = "Please enter a game to proceed"
+            }
+        }
+    </script>
 </head>
 <body>
     <div id="container">
@@ -13,7 +23,8 @@
             <a href='#'>Game Entry</a>
             <a href='gamelist.html'>Game List</a>
         </nav>
-        <form action="/saveGame" method="POST">
+        <form action="/saveGame" method="POST" onsubmit="checkForm()">
+            <span id="err" style="color:red"></span>
             <label for="game">Enter Game Title Here</label>
             <br>
             <input type="text" name="game" id="GameTitle">
