@@ -3,7 +3,7 @@ var mongoose = require('mongoose')
 var app = express()
 var path = require('path')
 var bodyparser = require('body-parser')
-var router = express.Router()
+//var router = express.Router()
 
 //sets up middleware to use in our application
 app.use(bodyparser.json())
