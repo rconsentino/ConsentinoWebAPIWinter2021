@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,25 +11,26 @@
         {
             socket.emit('sendBtnMsg',
             {
-                message: 'Sending message from button'
+                message:'Sending Messge from button'
             })
         }
-        socket.emit('sendMsg',
-            {
-                message: 'Hello Ryan I am logged in'
-            })
 
-        socket.on('messageFromServer', function (data) {
+        socket.emit('sendMsg',
+        {
+            message:'Hello Ryan I am logged in'
+        })
+
+        socket.on('messageFromServer', function(data)
+        {
             console.log(data.message)
         })
 
     </script>
-</head>
 
+</head>
 <body>
-    <h1>Welcome to SocketIO Server</h1>
+    <h1>Welcome to socketIO Server</h1>
     <br>
     <button onclick="msg()">Send</button>
 </body>
-
 </html>

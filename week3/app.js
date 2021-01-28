@@ -1,19 +1,18 @@
-var express = require('express')
+var express = require("express")
 var app = express()
-var serv = require('http').Server(app)
-var io = require('socket.io')(serv,{})
+var serv = require("http").Server(app)
+var io = require("socket.io")(serv,{})
 
-//File communication
-app.get('/', function(req,res)
+//file communication
+app.get('/', function(req, res)
 {
     res.sendFile(__dirname+'/client/index.html')
 })
 
 app.use('/client', express.static(__dirname+'/client'))
-
 serv.listen(3000, function()
 {
-    console.log("Connected on local host 3000")
+    console.log("Connected on localhost 3000")
 })
 
 //server side communication
@@ -32,6 +31,6 @@ io.sockets.on('connection', function(socket)
 
     socket.emit('messageFromServer',
     {
-        message:'Hey Ryan welcome to the party'
+        message:'Hey Ryan Welcome to the Party'
     })
 })
