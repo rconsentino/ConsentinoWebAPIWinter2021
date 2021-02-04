@@ -2,6 +2,7 @@ var express = require("express")
 var app = express()
 var serv = require("http").Server(app)
 var io = require("socket.io")(serv,{})
+var debug = true;
 
 //file communication
 app.get('/', function(req, res)
@@ -40,6 +41,10 @@ var GameObject = function()
         self.x += self.spX
         self.y += self.spY
     }
+    self.getDist = function(point)
+    {
+        return Math.sqrt(Math.pow(self.x - point.x,2) + Math.pow(self.y - point.y,2))
+    }
     return self
 }
 
@@ -52,6 +57,8 @@ var Player = function(id)
     self.left = false
     self.up = false
     self.down = false
+    self.attack = false
+    self.mouseAngle = 0
     self.speed = 10
 
     var playerUpdate = self.update
@@ -60,6 +67,21 @@ var Player = function(id)
     {
         self.updateSpeed()
         playerUpdate()
+        // if(Math.random() < 0.1)
+        // {
+        //     self.shoot(Math.random()*360)
+        // }
+        if(self.attack)
+        {
+            self.shoot(self.mouseAngle)
+        }
+    }
+
+    self.shoot = function(angle)
+    {
+        var b = Bullet(self.id,angle)
+        b.x = self.x
+        b.y = self.y
     }
 
     self.updateSpeed = function()
@@ -122,6 +144,14 @@ Player.onConnect = function(socket)
             {
                 player.right = data.state
             }
+            if(data.inputId === 'attack')
+            {
+                player.attack = data.state
+            }
+            if(data.inputId === 'mouseAngle')
+            {
+                player.mouseAngle = data.state
+            }
         })
 }
 
@@ -148,21 +178,80 @@ Player.update = function()
     return pack
 }
 
+var Bullet = function(parent,angle)
+{
+    var self = GameObject()
+    self.id = Math.random()
+    self.spX = Math.cos(angle/180*Math.PI) * 10
+    self.spY = Math.sin(angle/180*Math.PI) * 10
+    self.parent = parent
+
+    self.timer = 0
+    self.toRemove = false
+
+    var bulletUpdate = self.update
+    self.update = function()
+    {
+        if(self.timer++ > 100)
+        {
+            self.toRemove = true
+        }
+        bulletUpdate()
+        for(var i in Player.list)
+        {
+            var p = Player.list[i]
+            if(self.getDist(p)<25 && self.parent !== p.id)
+            {
+                self.toRemove = true
+            }
+        }
+    }
+    Bullet.list[self.id] = self
+    return self
+}
+
+Bullet.list = {}
+
+Bullet.update = function()
+{
+    //create bullets
+    // if(Math.random() < 0.1)
+    // {
+    //    Bullet(Math.random()*360)
+    // }
+    var pack = []
+
+    for(var i in Bullet.list)
+    {
+        var bullet = Bullet.list[i]
+        bullet.update()   
+        if(bullet.toRemove)
+        {
+            delete Bullet.list[i]
+        }
+        else
+        {
+            pack.push(
+                {
+                    x:bullet.x,
+                    y:bullet.y,
+                })  
+        }
+    }
+
+    return pack
+}
+
+//connection to game
 io.sockets.on('connection', function(socket)
 {
     console.log("Socket Connected")
 
     socket.id = Math.random()
-    //socket.x = 0
-    //socket.y = Math.floor(Math.random()*600)
-    //socket.number = Math.floor(Math.random()*10)
 
     //add something to SocketList
     SocketList[socket.id] = socket
     Player.onConnect(socket)
-
-
-
 
     // disconnection event
     socket.on("disconnect", function()
@@ -171,29 +260,37 @@ io.sockets.on('connection', function(socket)
         Player.onDisconnect(socket)
     })
 
+    //handling chat event
+    socket.on("sendMessageToServer", function(data)
+    {
+        var playerName = (" " + socket.id).slice(2,7)
+        for(var i in SocketList)
+        {
+            SocketList[i].emit('addToChat', playerName + ": " + data)
+        }
+    })
 
-
-    /// old examples from wednesday 1/27
-   // socket.on('sendMsg', function(data)
-    //{
-    //    console.log(data.message)
-    //})
-   // socket.on('sendBtnMsg',function(data)
-    //{
-    //    console.log(data.message)
-    //})
-
-   // socket.emit('messageFromServer',
-   // {
-    //    message:'Hey Mat Welcome to the Party'
-   // })
+    //debug
+    socket.on("evalServer", function(data)
+    {
+        if(!debug)
+        {
+            return
+        }
+        var res = eval(data)
+        socket.emit('evalResponse', res)
+    })
 })
 
 // setup update loop
 setInterval(function()
 {
-    var pack = Player.update()
-    //Player.update()
+    var pack = {
+        player:Player.update(),
+        bullet:Bullet.update()
+    }
+    //var pack = Player.update()
+
 
     for(var i in SocketList)
     {
