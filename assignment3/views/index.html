@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asteroid Avoidance</title>
+</head>
+
+<body>
+    <canvas width="800" height="600" style="border:1px solid black; background-color: black;"></canvas>
+    <form method="POST" action="/saveHighScore" class="highscore">
+        <input type="text" placeholder="Enter your name for High Score" name="playerName"
+            style="position:absolute; left:300px; top:400px; width:200px;" />
+        <input id="score" type="hidden" name="score" value="">
+        <button style="position:absolute; left:350px; top:450px; width:100px;">Submit</button>
+    </form>
+    <script>
+        function setScore(highScore)
+        {
+            document.getElementById('score').value = highScore
+        }
+    </script>
+    <script src="script.js"></script>
+</body>
+
+</html>
