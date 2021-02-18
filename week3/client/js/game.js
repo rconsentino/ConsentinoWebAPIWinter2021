@@ -62,6 +62,12 @@ var drawMap = function(){
     ctx.drawImage(Sprites.map, 0, 0, 800, 600)
 }
 
+var drawScore = function(){
+    ctx.fillStyle = 'white'
+    ctx.fillText(Player.list[clientId].score, 50, 50)
+    ctx.fillStyle = 'black'
+}
+
 var Player = function(initPack)
 {
     var self = {}
@@ -203,6 +209,7 @@ setInterval(function()
 {
     ctx.clearRect(0,0,800,600)
     drawMap()
+    drawScore()
     for(var i in Player.list)
     {
         //Draw functions will go here
