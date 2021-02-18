@@ -39,6 +39,8 @@ socket.on('signUpResponse',function(data){
 
 })
 
+
+
 //Game related code====================================
 var canvas = document.getElementById('canvas')
 var ctx = canvas.getContext('2d')
@@ -135,3 +137,19 @@ chatForm.onsubmit = function(e){
     //clear out the input field
     chatInput.value = ""
 }
+
+
+
+        //Example Code from Wednesday1/27
+        // var msg = function(){
+        //     socket.emit('sendBtnMsg',{
+        //          message:'Sending Message from button'
+        //      })
+        // }
+        // socket.emit('sendMsg',{
+        //     message:'Hello Jordan I am logged in'
+        // })
+
+        // socket.on('messageFromServer', function(data){
+        //     console.log(data.message);
+        // })

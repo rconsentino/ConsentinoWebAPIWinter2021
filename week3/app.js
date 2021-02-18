@@ -2,6 +2,7 @@ var express = require('express')
 const { setFlagsFromString } = require('v8')
 var app = express()
 var mongoose = require('mongoose')
+const { RSA_NO_PADDING } = require('constants')
 var serv = require('http').Server(app)
 var io = require('socket.io')(serv,{})
 var debug = true
@@ -14,6 +15,7 @@ var PlayerData = mongoose.model('player')
 
 //File Communication===================================
 app.get('/', function(req,res){
+   // console.log(err)
     res.sendFile(__dirname+'/client/index.html')
 })
 
@@ -222,16 +224,25 @@ var Players = {
 
 var isPasswordValid = function(data,cb){
     PlayerData.findOne({username:data.username},function(err,username){
-        console.log(username.password, data.password)
-        cb(data.password == username.password)
+            //console.log(username.password, data.password)
+            cb(data.password == username.password)
     })
     
 
     //return Players[data.username] === data.password
 }
 
-var isUsernameTaken = function(data){
-   return Players[data.username]
+var isUsernameTaken = function(data,cb){
+    PlayerData.findOne({username:data.username},function(err,username){
+        if(username == null){
+           cb(false) 
+        }
+        else{
+            cb(true)
+        }
+        
+  })
+   //return Players[data.username]
 }
 
 var addUser = function(data){
@@ -256,7 +267,7 @@ io.sockets.on('connection', function(socket){
 
     //signIn event
     socket.on('signIn',function(data){
-        
+        //old connection code without the callback function
         // if(isPasswordValid(data)){
         //    Player.onConnect(socket)
         //     //send the id to the client
@@ -280,12 +291,22 @@ io.sockets.on('connection', function(socket){
 
     //signUp event
     socket.on('signUp',function(data){
-        if(isUsernameTaken(data)){
+        // if(isUsernameTaken(data)){
+        //     socket.emit('signUpResponse',{success:false}) 
+        // }else{
+        //     addUser(data)
+        //     socket.emit('signUpResponse',{success:true}) 
+        // }
+
+     isUsernameTaken(data, function(res){
+        if(res){
             socket.emit('signUpResponse',{success:false}) 
         }else{
             addUser(data)
             socket.emit('signUpResponse',{success:true}) 
         }
+     })
+     
     })
     
     //disconnection event
@@ -310,6 +331,17 @@ io.sockets.on('connection', function(socket){
         var res = eval(data)
         socket.emit('evalResponse', res)
     })
+    ///Old Examples from Wednesday 1/27
+    // socket.on('sendMsg',function(data){
+    //     console.log(data.message);
+    // })
+    // socket.on('sendBtnMsg',function(data){
+    //     console.log(data.message)
+    // })
+
+    // socket.emit('messageFromServer',{
+    //     message:'Hey Jordan Welcome to the party'
+    // })
 })
 
 //Setup Update Loop 
