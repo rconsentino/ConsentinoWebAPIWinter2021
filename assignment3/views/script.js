@@ -1,3 +1,20 @@
+var socket = io()
+var gameDiv = document.getElementById('gameDiv')
+var error = document.getElementById('err')
+//Game related code====================================
+var chatText = document.getElementById('chat-text')
+var chatInput = document.getElementById('chat-input')
+var chatForm = document.getElementById('chat-form')
+var px = 0
+var py = 0
+var clientId;
+ctx.font = '30px Arial'
+
+socket.on('connected',function(data){
+    clientId = data
+    console.log(clientId)
+})
+
 var c = document.querySelector("canvas");
 var ctx = c.getContext("2d");
 var timer = requestAnimationFrame(main);
@@ -41,12 +58,6 @@ function Asteroids(){
 
     this.draw = function(){
         ctx.save();
-        //draws original circles for asteroids
-        /*ctx.beginPath();
-        ctx.fillStyle = this.color;
-        ctx.arc(this.x,this.y, this.radius, 0, 2*Math.PI,true);
-        ctx.closePath();
-        ctx.fill();*/
         ctx.drawImage(cookieSprite,this.x - this.radius,this.y-this.radius,this.radius*2, this.radius*2)
         ctx.restore();
 
@@ -143,44 +154,86 @@ function gameStart() {
 
 
 
-//adding event listeners
-document.addEventListener("keydown", keyPressDown);
-document.addEventListener("keyup", keyPressUp);
+//event listeners for keypresses and mouse clicks and mouse posiition
+document.addEventListener('keydown', keyPressDown)
+document.addEventListener('keyup', keyPressUp)
 
-function keyPressUp(e){
-  //  console.log("Key released " + e.keyCode);
-    if(gameOver == false){
-        if(e.keyCode === 38){
-            ship.up = false;
-        }
-        if(e.keyCode === 37){
-            ship.left = false;
-        }
-        if(e.keyCode === 39){
-            ship.right = false;
-        }
+function keyPressDown(e) {
+    if (gameOver == false) {
+        if (e.keyCode === 68)//right
+            socket.emit('keypress', { inputId: 'right', state: true })
+        else if (e.keyCode === 65)//left
+            socket.emit('keypress', { inputId: 'left', state: true })
+        else if (e.keyCode === 87)//up
+            socket.emit('keypress', { inputId: 'up', state: true })
     }
-    
 }
 
-function keyPressDown(e){
+function keyPressUp(e) {
+    if (gameOver == false) {
+        if (e.keyCode === 68)//right
+            socket.emit('keypress', { inputId: 'right', state: false })
+        else if (e.keyCode === 65)//left
+            socket.emit('keypress', { inputId: 'left', state: false })
+        else if (e.keyCode === 87)//up
+            socket.emit('keypress', { inputId: 'up', state: false })
+    }
+}
+
+socket.on('newPositions', function (data) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    for (var i = 0; i < data.player.length; i++) {
+        if(clientId == data.player[i].id){
+            px = data.player[i].x
+            py = data.player[i].y
+        }
+        ctx.fillText(data.player[i].number, data.player[i].x, data.player[i].y);
+    }
+    for (var i = 0; i < data.bullet.length; i++) {
+        ctx.fillRect(data.bullet[i].x + 5, data.bullet[i].y - 10,10,10);
+    }
+})
+
+socket.on('addToChat',function(data){
+    chatText.innerHTML += `<div>${data}</div>`
+})
+
+socket.on('evalResponse',function(data){
+    chatText.innerHTML += `<div>${data}</div>`
+    console.log(data)
+})
+
+chatForm.onsubmit = function(e){
+    e.preventDefault()
+
+    if(chatInput.value[0]==='/'){
+        socket.emit('evalServer', chatInput.value.slice(1))
+    }else{
+        socket.emit('sendMessageToServer', chatInput.value)
+    }
+    //clear out the input field
+    chatInput.value = ""
+}
+
+
+function keyPressDown(e) {
     //console.log("Key pressed " + e.keyCode);
-    if(gameOver == false){
-        if(e.keyCode === 38){
+    if (gameOver == false) {
+        if (e.keyCode === 38) {
             ship.up = true;
         }
 
-        if(e.keyCode === 37){
+        if (e.keyCode === 37) {
             ship.left = true;
         }
-        if(e.keyCode === 39){
+        if (e.keyCode === 39) {
             ship.right = true;
         }
     }
     if (gameOver == true) {
         if (e.keyCode === 13) {
 
-            if(currentState == 2){
+            if (currentState == 2) {
                 currentState = 0;
                 score = 0;
                 numAsteroids = 10;
@@ -188,14 +241,14 @@ function keyPressDown(e){
                 gameStart();
                 main();
             }
-            else{
+            else {
                 gameStart();
                 gameOver = false;
                 currentState = 1;
                 main();
                 scoreTimer();
             }
-            
+
         }
     }
 }
@@ -284,37 +337,37 @@ gameStates[1] = function(){
     }
 }
 
-//---Game Over Screen---
-gameStates[2] = function(){
-    highScoreElements.style.display = "block";
-    if(score > highScore){
-        highScore = score;
-        ctx.save();
-        ctx.font = "30px Arial";
-        ctx.fillStyle = "white";
-        ctx.textAlign = "center"
-        ctx.fillText("Game Over, Your score was: " + score.toString(), c.width/2, c.height/2 - 60);
-        ctx.fillText("Your New High Score is: " + highScore.toString() , c.width/2, c.height/2 - 30);
-        ctx.fillText("New Record!!", c.width/2, c.height/2 );
-        ctx.font = "15px Arial";
-        ctx.fillText("Press Enter to Start", c.width/2, c.height/2 + 20);
-        ctx.restore();
-        setScore(highScore);
-    }
-    else{
-        ctx.save();
-        ctx.font = "30px Arial";
-        ctx.fillStyle = "white";
-        ctx.textAlign = "center"
-        ctx.fillText("Game Over, Your score was: " + score.toString(), c.width/2, c.height/2 - 60);
-        ctx.fillText("Your high Score is: " + highScore.toString(), c.width/2, c.height/2 - 30);
-        ctx.font = "15px Arial";
-        ctx.fillText("Press Enter to Start", c.width/2, c.height/2 + 20);
-        ctx.restore();
-    }
+// //---Game Over Screen---
+// gameStates[2] = function(){
+//     highScoreElements.style.display = "block";
+//     if(score > highScore){
+//         highScore = score;
+//         ctx.save();
+//         ctx.font = "30px Arial";
+//         ctx.fillStyle = "white";
+//         ctx.textAlign = "center"
+//         ctx.fillText("Game Over, Your score was: " + score.toString(), c.width/2, c.height/2 - 60);
+//         ctx.fillText("Your New High Score is: " + highScore.toString() , c.width/2, c.height/2 - 30);
+//         ctx.fillText("New Record!!", c.width/2, c.height/2 );
+//         ctx.font = "15px Arial";
+//         ctx.fillText("Press Enter to Start", c.width/2, c.height/2 + 20);
+//         ctx.restore();
+//         setScore(highScore);
+//     }
+//     else{
+//         ctx.save();
+//         ctx.font = "30px Arial";
+//         ctx.fillStyle = "white";
+//         ctx.textAlign = "center"
+//         ctx.fillText("Game Over, Your score was: " + score.toString(), c.width/2, c.height/2 - 60);
+//         ctx.fillText("Your high Score is: " + highScore.toString(), c.width/2, c.height/2 - 30);
+//         ctx.font = "15px Arial";
+//         ctx.fillText("Press Enter to Start", c.width/2, c.height/2 + 20);
+//         ctx.restore();
+//     }
 
     
-}
+// }
 
 
 //---Main Game Loop---
