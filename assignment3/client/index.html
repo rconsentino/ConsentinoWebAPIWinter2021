@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SocketIO Server</title>
+    <script src="https://cdn.socket.io/socket.io-3.0.1.min.js"></script>
+</head>
+<body>
+    <h1>Welcome to socketIO Server</h1>
+    <br>
+    <div id="signInDiv">
+        <span id="err" style="color:red; font-family: Arial, Helvetica, sans-serif; font-size: x-small;"></span> <br>
+        Username: <input type="text" id="signInDiv-username"> <br>
+        Password: <input type="password" id="signInDiv-password"> <br>
+        <button id="signInDiv-signIn">Sign In</button>
+        <button id="signInDiv-signUp">Sign Up</button>
+    </div>
+
+    <!-- Seperate div for the game-->
+    <div id="gameDiv" style="display: none;">
+        <canvas id="canvas" width="800" height="600" style="border:1px solid black"></canvas>
+    
+        <!-- Form for chat-->
+        <div id="chat-text" style="width:500px; height:100px; overflow-y: scroll; font-family:Arial, Helvetica, sans-serif">
+            <div>Hello Welcome to Chat</div>
+        </div>
+        <form id="chat-form">
+            <input type="text" name="chat-input" id="chat-input" style="width: 500px;">
+        </form>
+    </div>
+
+    <!--<button onclick="msg()">Send</button>-->
+    <script src="/client/js/game.js"></script>
+</body>
+</html>
