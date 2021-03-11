@@ -1,17 +1,19 @@
-var mongoose = require('mongoose')
+var mongoose = require("mongoose")
 var Schema = mongoose.Schema
 
-var GameSchema = new Schema(
+var PlayerSchema = new Schema(
     {
-        score:{
+        username:
+        {
             type:String,
             required:true
         },
-        playerName:{
+        password:
+        {
             type:String,
             required:true
         }
     }
 )
 
-mongoose.model('score', GameSchema)
+mongoose.model('player', PlayerSchema)
